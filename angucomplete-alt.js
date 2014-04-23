@@ -140,7 +140,9 @@ angular.module('angucomplete-alt', [] ).directive('angucompleteAlt', ['$parse', 
             if (scope.matchClass) {
               re = new RegExp(str, 'i');
               strPart = text.match(re)[0];
-              text = $sce.trustAsHtml(text.replace(re, '<span class="'+ scope.matchClass +'">'+ strPart +'</span>'));
+              if (strPart !== null) {
+                text = $sce.trustAsHtml(text.replace(re, '<span class="'+ scope.matchClass +'">'+ strPart +'</span>'));
+              }
             }
 
             scope.results[scope.results.length] = {
