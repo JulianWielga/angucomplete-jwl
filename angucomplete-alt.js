@@ -40,7 +40,21 @@ angular.module('angucomplete-alt', []).directive('angucompleteAlt', ['$parse', '
 			clearSelected: '@',
 			overrideSuggestions: '@'
 		},
-		template: '<div class="angucomplete-holder"><input id="{{id}}_value" ng-model="searchStr" type="text" placeholder="{{placeholder}}" class="{{inputClass}}" ng-focus="resetHideResults()" ng-blur="hideResults()"/><div id="{{id}}_dropdown" class="angucomplete-dropdown" ng-if="showDropdown"><div class="angucomplete-searching" ng-show="searching">Searching...</div><div class="angucomplete-searching" ng-show="!searching && (!results || results.length == 0)">No results found</div><div class="angucomplete-row" ng-repeat="result in results" ng-click="selectResult(result)" ng-mouseover="hoverRow()" ng-class="{\'angucomplete-selected-row\': $index == currentIndex}"><div ng-if="imageField" class="angucomplete-image-holder"><img ng-if="result.image && result.image != \'\'" ng-src="{{result.image}}" class="angucomplete-image"/><div ng-if="!result.image && result.image != \'\'" class="angucomplete-image-default"></div></div><div class="angucomplete-title" ng-if="matchClass" ng-bind-html="result.title"></div><div class="angucomplete-title" ng-if="!matchClass">{{ result.title }}</div><div ng-if="result.description && result.description != \'\'" class="angucomplete-description">{{result.description}}</div></div></div></div>',
+		template: '<div class="angucomplete-holder">' +
+				'<input id="{{id}}_value" ng-model="searchStr" type="text" placeholder="{{placeholder}}" class="{{inputClass}}" ng-focus="resetHideResults()" ng-blur="hideResults()"/>' +
+				'<div id="{{id}}_dropdown" class="angucomplete-dropdown" ng-if="showDropdown">' +
+				'	<div class="angucomplete-searching" ng-show="searching">Searching...</div>' +
+				'	<div class="angucomplete-searching" ng-show="!searching && (!results || results.length == 0)">No results found</div>' +
+				'	<div class="angucomplete-row" ng-repeat="result in results" ng-click="selectResult(result)" ng-mouseover="hoverRow()" ng-class="{\'angucomplete-selected-row\': $index == currentIndex}">' +
+				'		<div ng-if="imageField" class="angucomplete-image-holder">' +
+				'			<img ng-if="result.image && result.image != \'\'" ng-src="{{result.image}}" class="angucomplete-image"/>' +
+				'			<div ng-if="!result.image && result.image != \'\'" class="angucomplete-image-default"></div>' +
+				'		</div>' +
+				'		<div class="angucomplete-title" ng-bind-html="result.title"></div>' +
+				'		<div ng-if="result.description && result.description != \'\'" class="angucomplete-description" ng-bind-html="result.description"></div>' +
+				'	</div>' +
+				'</div></div>',
+
 		link: function (scope, elem, attrs) {
 			var inputField,
 					minlength = MIN_LENGTH,
@@ -110,7 +124,7 @@ angular.module('angucomplete-alt', []).directive('angucompleteAlt', ['$parse', '
 			};
 
 			scope.processResults = function (responseData, str) {
-				var titleFields, titleCode, i, t, description, image, text, re, strPart;
+				var titleFields, titleCode, i, t, description, image, text, re, titlePart;
 
 				if (responseData && responseData.length > 0) {
 					scope.results = [];
@@ -140,16 +154,23 @@ angular.module('angucomplete-alt', []).directive('angucompleteAlt', ['$parse', '
 
 						text = titleCode.join(' ');
 						if (scope.matchClass) {
+							console.log(str);
 							re = new RegExp(str, 'i');
-							strPart = text.match(re)[0];
-							if (strPart !== null) {
-								text = $sce.trustAsHtml(text.replace(re, '<span class="' + scope.matchClass + '">' + strPart + '</span>'));
+
+							titlePart = text.match(re);
+							if (titlePart != null) {
+								text = text.replace(re, '<span class="' + scope.matchClass + '">' + titlePart[0] + '</span>');
+							}
+
+							descPart = description.match(re);
+							if (descPart != null) {
+								description = description.replace(re, '<span class="' + scope.matchClass + '">' + descPart[0] + '</span>');
 							}
 						}
 
 						scope.results[scope.results.length] = {
-							title: text,
-							description: description,
+							title: $sce.trustAsHtml(text),
+							description: $sce.trustAsHtml(description),
 							image: image,
 							originalObject: responseData[i]
 						};
