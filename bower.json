@@ -1,9 +1,9 @@
 {
-  "name": "angucomplete-alt",
-  "version": "0.0.3",
-  "homepage": "http://ghiden.github.io/angucomplete-alt/",
+  "name": "angucomplete-jwl",
+  "version": "0.0.4",
+  "homepage": "http://julianwielga.github.io/angucomplete-jwl",
   "authors": [
-    "Hidenari Nozaki <hidenari@gmail.com>"
+    "Julian Wielga"
   ],
   "description": "Awesome Autocompleteness for AngularJS",
   "keywords": [
