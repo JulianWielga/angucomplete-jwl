@@ -1,78 +1,221 @@
+<!DOCTYPE html>
 <html>
-	<head>
-		<title>Angucomplete</title>
-    <meta name='viewport' content='width=device-width,initial-scale=1'>
-    <link rel="stylesheet" href="css/structure.css"/>
-    <link rel="stylesheet" href="css/angucomplete-alt.css"/>
-    <link rel="stylesheet" href="fonts/bariol/bariol.css"/>
-    </head>
-	<body ng-app="app">
-		<div ng-controller="MainController">
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <link href='https://fonts.googleapis.com/css?family=Chivo:900' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <title>Angucomplete-jwl by JulianWielga</title>
+  </head>
 
-      <h1>Angucomplete Alt</h1>
-      <h2>Awesome Autocompleteness for AngularJS</h2>
-      <p>
-      A minimal looking autocomplete directive originally developed by Daryl Rowland as <a href="https://github.com/darylrowland/angucomplete">Angucomplete</a>, and I added a few tweaks to it.
-      </p>
+  <body>
+    <div id="container">
+      <div class="inner">
 
-      <div class="large-padded-row">
+        <header>
+          <h1>Angucomplete-jwl</h1>
+          <h2>A fork of Daryl Rowland&#39;s angucomplete (https://github.com/darylrowland/angucomplete) with some extra features.</h2>
+        </header>
 
-        <h3>Example 1 - Countries of the World</h3>
-        <div class="padded-row">
-          <angucomplete-alt id="ex1" placeholder="Search countries" pause="100" selected-object="selectedCountry" local-data="countries" search-fields="name" title-field="name" minlength="1" input-class="form-control form-control-small" match-class="highlight" />
-        </div>
-        <div class="" ng-show="selectedCountry">
-          You selected <span class="bold-span">{{selectedCountry.originalObject.name}}</span> which has a country code of <span class="bold-span">{{selectedCountry.originalObject.code}}</span>
-        </div>
+        <section id="downloads" class="clearfix">
+          <a href="https://github.com/JulianWielga/angucomplete-jwl/zipball/master" id="download-zip" class="button"><span>Download .zip</span></a>
+          <a href="https://github.com/JulianWielga/angucomplete-jwl/tarball/master" id="download-tar-gz" class="button"><span>Download .tar.gz</span></a>
+          <a href="https://github.com/JulianWielga/angucomplete-jwl" id="view-on-github" class="button"><span>View on GitHub</span></a>
+        </section>
 
+        <hr>
+
+        <section id="main_content">
+          <h1>
+<a name="angucomplete-alt" class="anchor" href="#angucomplete-alt"><span class="octicon octicon-link"></span></a>angucomplete-alt</h1>
+
+<p>This is a fork of Daryl Rowland's angucomplete (<a href="https://github.com/darylrowland/angucomplete">https://github.com/darylrowland/angucomplete</a>) with a bit of tweaks such as:  </p>
+
+<ul>
+<li>change long attribute names to hyphenated ones</li>
+<li>coding style similar to angular standard</li>
+<li>refactored in general</li>
+<li>jshint</li>
+<li>more test coverage</li>
+</ul><p>To see a demo go here: <a href="http://ghiden.github.io/angucomplete-alt">http://ghiden.github.io/angucomplete-alt</a></p>
+
+<h3>
+<a name="key-features" class="anchor" href="#key-features"><span class="octicon octicon-link"></span></a>Key Features</h3>
+
+<ul>
+<li>Show just a title, a title and a description or a title, description and image in your autocomplete list</li>
+<li>Deliberately minimally styled so you can customise it to your heart's content!</li>
+<li>Reads JSON data and allows you to specify which fields to use for display</li>
+<li>Simple setup - e.g. to pull data from a server, just set the url parameter</li>
+</ul><h3>
+<a name="extra-features" class="anchor" href="#extra-features"><span class="octicon octicon-link"></span></a>Extra Features</h3>
+
+<ul>
+<li>Request format function: if you need to tweak data before you send to your search API, you can set your own format function. Search query goes through your function and gets sent to your API.</li>
+<li>Clear on selection: when you select an item, input field is cleared.</li>
+<li>Blur event handling, thanks to <a href="https://github.com/leejsinclair" class="user-mention">@leejsinclair</a>
+</li>
+<li>Override suggestions</li>
+</ul><h3>
+<a name="getting-started" class="anchor" href="#getting-started"><span class="octicon octicon-link"></span></a>Getting Started</h3>
+
+<p>Download the code, and include the angucomplete-alt.js file in your page. Then add the angucomplete-alt module to your Angular App file, e.g.</p>
+
+<div class="highlight highlight-html"><pre>var app = angular.module('app', ["angucomplete-alt"]);
+</pre></div>
+
+<h3>
+<a name="local-usage" class="anchor" href="#local-usage"><span class="octicon octicon-link"></span></a>Local Usage</h3>
+
+<div class="highlight highlight-html"><pre><span class="nt">&lt;angucomplete-alt</span> <span class="na">id=</span><span class="s">"ex1"</span>
+              <span class="na">place-holder=</span><span class="s">"Search countries"</span>
+              <span class="na">pause=</span><span class="s">"100"</span>
+              <span class="na">selected-object=</span><span class="s">"selectedCountry"</span>
+              <span class="na">local-data=</span><span class="s">"countries"</span>
+              <span class="na">search-fields=</span><span class="s">"name"</span>
+              <span class="na">title-field=</span><span class="s">"name"</span>
+              <span class="na">minlength=</span><span class="s">"1"</span>
+              <span class="na">input-class=</span><span class="s">"form-control form-control-small"</span><span class="nt">/&gt;</span>
+</pre></div>
+
+<h3>
+<a name="remote-usage" class="anchor" href="#remote-usage"><span class="octicon octicon-link"></span></a>Remote Usage</h3>
+
+<div class="highlight highlight-html"><pre><span class="nt">&lt;angucomplete</span> <span class="na">id=</span><span class="s">"members"</span>
+              <span class="na">placeholder=</span><span class="s">"Search members"</span>
+              <span class="na">pause=</span><span class="s">"400"</span>
+              <span class="na">selected-object=</span><span class="s">"testObj"</span>
+              <span class="na">remote-url=</span><span class="s">"http://myserver.com/api/user/find?s="</span>
+              <span class="na">remote-url-data-field=</span><span class="s">"results"</span>
+              <span class="na">title-field=</span><span class="s">"firstName,surname"</span>
+              <span class="na">description-field=</span><span class="s">"email"</span>
+              <span class="na">image-field=</span><span class="s">"profilePic"</span>
+              <span class="na">input-class=</span><span class="s">"form-control form-control-small"</span><span class="nt">/&gt;</span>
+</pre></div>
+
+<h3>
+<a name="description-of-attributes" class="anchor" href="#description-of-attributes"><span class="octicon octicon-link"></span></a>Description of attributes</h3>
+
+<table>
+<thead><tr>
+<th align="left">Attribute</th>
+<th align="left">Description</th>
+<th align="center">Required</th>
+<th align="left">Example</th>
+</tr></thead>
+<tbody>
+<tr>
+<td align="left">id</td>
+<td align="left">A unique ID for the field</td>
+<td align="center">Yes</td>
+<td align="left">members</td>
+</tr>
+<tr>
+<td align="left">placeholder</td>
+<td align="left">Placeholder text for the search field</td>
+<td align="center">No</td>
+<td align="left">Search members</td>
+</tr>
+<tr>
+<td align="left">pause</td>
+<td align="left">The time to wait (in milliseconds) before searching when the user enters new characters</td>
+<td align="center">No</td>
+<td align="left">400</td>
+</tr>
+<tr>
+<td align="left">selected-object</td>
+<td align="left">Where to store the selected object in your model/controller (like ng-model)</td>
+<td align="center">Yes</td>
+<td align="left">myObject</td>
+</tr>
+<tr>
+<td align="left">remote-url</td>
+<td align="left">The remote URL to hit to query for results in JSON. angucomplete will automatically append the search string on the end of this, so it must be a GET request</td>
+<td align="center">No</td>
+<td align="left"><a href="http://myserver.com/api/users/find?searchstr=">http://myserver.com/api/users/find?searchstr=</a></td>
+</tr>
+<tr>
+<td align="left">remote-url-data-field</td>
+<td align="left">The name of the field in the JSON object returned back that holds the Array of objects to be used for the autocomplete list.</td>
+<td align="center">No</td>
+<td align="left">results</td>
+</tr>
+<tr>
+<td align="left">title-field</td>
+<td align="left">The name of the field in the JSON objects returned back that should be used for displaying the title in the autocomplete list. Note, if you want to combine fields together, you can comma separate them here (e.g. for a first and last name combined)</td>
+<td align="center">Yes</td>
+<td align="left">firstName,lastName</td>
+</tr>
+<tr>
+<td align="left">description-field</td>
+<td align="left">The name of the field in the JSON objects returned back that should be used for displaying the description in the autocomplete list</td>
+<td align="center">No</td>
+<td align="left">twitterUsername</td>
+</tr>
+<tr>
+<td align="left">image-field</td>
+<td align="left">The name of the field in the JSON objects returned back that should be used for displaying an image in the autocomplete list</td>
+<td align="center">No</td>
+<td align="left">pic</td>
+</tr>
+<tr>
+<td align="left">minlength</td>
+<td align="left">The minimum length of string required before searching</td>
+<td align="center">No</td>
+<td align="left">3</td>
+</tr>
+<tr>
+<td align="left">input-class</td>
+<td align="left">The classes to use for styling the input box</td>
+<td align="center">No</td>
+<td align="left">form-control</td>
+</tr>
+<tr>
+<td align="left">local-data</td>
+<td align="left">The local data variable to use from your controller. Should be an array of objects</td>
+<td align="center">No</td>
+<td align="left">countriesList</td>
+</tr>
+<tr>
+<td align="left">search-fields</td>
+<td align="left">The fields from your local data to search on (comma separate them)</td>
+<td align="center">No</td>
+<td align="left">title,description</td>
+</tr>
+<tr>
+<td align="left">remote-url-request-formatter</td>
+<td align="left">A function that takes a query string and returns parameter(s) for GET. It should take the query string as argument and returns a key-value object.</td>
+<td align="center">No</td>
+<td align="left">Suppose if you need to send a query keyword and a timestamp to search API, you can write a function like this in the parent scope. $scope.dataFormatFn = function(str) { return {q: str, timestamp: +new Date()}; }</td>
+</tr>
+<tr>
+<td align="left">clear-selected</td>
+<td align="left">To clear out input field upon selecting an item, set this attribute to true.</td>
+<td align="center">No</td>
+<td align="left">true</td>
+</tr>
+<tr>
+<td align="left">override-suggestions</td>
+<td align="left">To override suggestions and set the value in input field to selectedObject</td>
+<td align="center">No</td>
+<td align="left">true</td>
+</tr>
+</tbody>
+</table>
+        </section>
+
+        <footer>
+          Angucomplete-jwl is maintained by <a href="https://github.com/JulianWielga">JulianWielga</a><br>
+          This page was generated by <a href="http://pages.github.com">GitHub Pages</a>. Tactile theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.
+        </footer>
+
+        
       </div>
-
-      <div class="large-padded-row">
-
-        <h3>Example 2 - People</h3>
-        <div class="padded-row">
-          <angucomplete-alt id="ex2" placeholder="Search people" pause="300" selected-object="selectedPerson" local-data="people" search-fields="firstName,surname" title-field="firstName,surname" description-field="twitter" image-field="pic" minlength="1" input-class="form-control form-control-small" match-class="highlight" />
-        </div>
-        <div class="" ng-show="selectedPerson">
-          You selected <span class="bold-span">{{selectedPerson.originalObject.firstName}} {{selectedPerson.originalObject.surname}}</span>
-        </div>
-
-      </div>
-
-      <div class="large-padded-row">
-
-        <h3>Example 3 - Clear Result on Selection</h3>
-        <div class="padded-row">
-          <angucomplete-alt id="ex1" placeholder="Search countries" pause="100" selected-object="selectedCountry3" local-data="countries" search-fields="name" title-field="name" minlength="1" input-class="form-control form-control-small" match-class="highlight" clear-selected="true"/>
-        </div>
-        <div class="" ng-show="selectedCountry3">
-          You selected <span class="bold-span">{{selectedCountry3.originalObject.name}}</span> which has a country code of <span class="bold-span">{{selectedCountry3.originalObject.code}}</span>
-        </div>
-
-      </div>
-
-      <div class="large-padded-row">
-
-        <h3>Example 4 - Override Suggestions with clear result</h3>
-        <div class="padded-row">
-          <angucomplete-alt id="ex1" placeholder="Search countries" pause="100" selected-object="selectedCountry4" local-data="countries" search-fields="name" title-field="name" minlength="1" input-class="form-control form-control-small" match-class="highlight" override-suggestions="true" clear-selected="true"/>
-        </div>
-        <div class="" ng-show="selectedCountry4">
-          You selected <span class="bold-span">{{selectedCountry4.originalObject}}</span>
-        </div>
-
-      </div>
-
-      <div class="very-large-padded-row">
-        <h5>Originally developed by Daryl Rowland (<a href="http://twitter.com/darylrowland">@darylrowland</a>)</h5>
-        <h5>Forked by Hidenari Nozaki (<a href="http://twitter.com/ghiden">@ghiden</a>)</h5>
-      </div>
-
-      <script src="js/angular.min.js"></script>
-      <script src="js/angular-touch.min.js"></script>
-      <script src="js/app/app.js"></script>
-      <script src="js/app/controllers/main-controller.js"></script>
-      <script src="js/app/directives/angucomplete-alt.js"></script>
     </div>
-	</body>
+  </body>
 </html>
