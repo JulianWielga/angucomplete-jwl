@@ -10,12 +10,12 @@
 
 'use strict';
 
-angular.module('angucomplete-alt', [] ).directive('angucompleteAlt', ['$parse', '$http', '$sce', '$timeout', function ($parse, $http, $sce, $timeout) {
+angular.module('angucomplete-alt', []).directive('angucompleteAlt', ['$parse', '$http', '$sce', '$timeout', function ($parse, $http, $sce, $timeout) {
 	var KEY_DW = 40,
 			KEY_UP = 38,
 			KEY_ES = 27,
 			KEY_EN = 13,
-			KEY_BS =  8,
+			KEY_BS = 8,
 			MIN_LENGTH = 3,
 			PAUSE = 500;
 
@@ -41,7 +41,7 @@ angular.module('angucomplete-alt', [] ).directive('angucompleteAlt', ['$parse', 
 			overrideSuggestions: '@'
 		},
 		template: '<div class="angucomplete-holder"><input id="{{id}}_value" ng-model="searchStr" type="text" placeholder="{{placeholder}}" class="{{inputClass}}" ng-focus="resetHideResults()" ng-blur="hideResults()"/><div id="{{id}}_dropdown" class="angucomplete-dropdown" ng-if="showDropdown"><div class="angucomplete-searching" ng-show="searching">Searching...</div><div class="angucomplete-searching" ng-show="!searching && (!results || results.length == 0)">No results found</div><div class="angucomplete-row" ng-repeat="result in results" ng-click="selectResult(result)" ng-mouseover="hoverRow()" ng-class="{\'angucomplete-selected-row\': $index == currentIndex}"><div ng-if="imageField" class="angucomplete-image-holder"><img ng-if="result.image && result.image != \'\'" ng-src="{{result.image}}" class="angucomplete-image"/><div ng-if="!result.image && result.image != \'\'" class="angucomplete-image-default"></div></div><div class="angucomplete-title" ng-if="matchClass" ng-bind-html="result.title"></div><div class="angucomplete-title" ng-if="!matchClass">{{ result.title }}</div><div ng-if="result.description && result.description != \'\'" class="angucomplete-description">{{result.description}}</div></div></div></div>',
-		link: function(scope, elem, attrs) {
+		link: function (scope, elem, attrs) {
 			var inputField,
 					minlength = MIN_LENGTH,
 					searchTimer = null,
@@ -52,7 +52,7 @@ angular.module('angucomplete-alt', [] ).directive('angucompleteAlt', ['$parse', 
 			scope.searching = false;
 			scope.searchStr = null;
 
-			var setInputString = function(str) {
+			var setInputString = function (str) {
 				scope.selectedObject = {originalObject: str};
 
 				if (scope.clearSelected) {
@@ -62,16 +62,18 @@ angular.module('angucomplete-alt', [] ).directive('angucompleteAlt', ['$parse', 
 				scope.results = [];
 			};
 
-			var isNewSearchNeeded = function(newTerm, oldTerm) {
+			var isNewSearchNeeded = function (newTerm, oldTerm) {
 				return newTerm.length >= minlength && newTerm !== oldTerm;
 			};
 
-			var extractValue = function(obj, key) {
+			var extractValue = function (obj, key) {
 				var keys, result;
 				if (key) {
-					keys= key.split('.');
+					keys = key.split('.');
 					result = obj;
-					keys.forEach(function(k) { result = result[k]; });
+					keys.forEach(function (k) {
+						result = result[k];
+					});
 				}
 				else {
 					result = obj;
@@ -95,19 +97,19 @@ angular.module('angucomplete-alt', [] ).directive('angucompleteAlt', ['$parse', 
 				scope.overrideSuggestions = false;
 			}
 
-			scope.hideResults = function() {
-				hideTimer = $timeout(function() {
+			scope.hideResults = function () {
+				hideTimer = $timeout(function () {
 					scope.showDropdown = false;
 				}, scope.pause);
 			};
 
-			scope.resetHideResults = function() {
+			scope.resetHideResults = function () {
 				if (hideTimer) {
 					$timeout.cancel(hideTimer);
 				}
 			};
 
-			scope.processResults = function(responseData, str) {
+			scope.processResults = function (responseData, str) {
 				var titleFields, titleCode, i, t, description, image, text, re, strPart;
 
 				if (responseData && responseData.length > 0) {
@@ -141,7 +143,7 @@ angular.module('angucomplete-alt', [] ).directive('angucompleteAlt', ['$parse', 
 							re = new RegExp(str, 'i');
 							strPart = text.match(re)[0];
 							if (strPart !== null) {
-								text = $sce.trustAsHtml(text.replace(re, '<span class="'+ scope.matchClass +'">'+ strPart +'</span>'));
+								text = $sce.trustAsHtml(text.replace(re, '<span class="' + scope.matchClass + '">' + strPart + '</span>'));
 							}
 						}
 
@@ -160,7 +162,7 @@ angular.module('angucomplete-alt', [] ).directive('angucompleteAlt', ['$parse', 
 				}
 			};
 
-			scope.searchTimerComplete = function(str) {
+			scope.searchTimerComplete = function (str) {
 				// Begin the search
 				var searchFields, matches, i, match, s, params;
 
@@ -188,33 +190,33 @@ angular.module('angucomplete-alt', [] ).directive('angucompleteAlt', ['$parse', 
 					} else if (scope.remoteUrlRequestFormatter) {
 						params = scope.remoteUrlRequestFormatter(str);
 						$http.get(scope.remoteUrl, {params: params}).
-							success(function(responseData, status, headers, config) {
-								scope.searching = false;
-								scope.processResults(extractValue(responseData, scope.remoteUrlDataField), str);
-							}).
-						error(function(data, status, headers, config) {
-							console.log('error');
-						});
+								success(function (responseData, status, headers, config) {
+									scope.searching = false;
+									scope.processResults(extractValue(responseData, scope.remoteUrlDataField), str);
+								}).
+								error(function (data, status, headers, config) {
+									console.log('error');
+								});
 
 					} else {
 						$http.get(scope.remoteUrl + str, {}).
-							success(function(responseData, status, headers, config) {
-								scope.searching = false;
-								scope.processResults(extractValue(responseData, scope.remoteUrlDataField), str);
-							}).
-						error(function(data, status, headers, config) {
-							console.log('error');
-						});
+								success(function (responseData, status, headers, config) {
+									scope.searching = false;
+									scope.processResults(extractValue(responseData, scope.remoteUrlDataField), str);
+								}).
+								error(function (data, status, headers, config) {
+									console.log('error');
+								});
 					}
 				}
 
 			};
 
-			scope.hoverRow = function(index) {
+			scope.hoverRow = function (index) {
 				scope.currentIndex = index;
 			};
 
-			scope.keyPressed = function(event) {
+			scope.keyPressed = function (event) {
 				if (!(event.which === KEY_UP || event.which === KEY_DW || event.which === KEY_EN)) {
 					if (!scope.searchStr || scope.searchStr === '') {
 						scope.showDropdown = false;
@@ -231,7 +233,7 @@ angular.module('angucomplete-alt', [] ).directive('angucompleteAlt', ['$parse', 
 
 						scope.searching = true;
 
-						searchTimer = $timeout(function() {
+						searchTimer = $timeout(function () {
 							scope.searchTimerComplete(scope.searchStr);
 						}, scope.pause);
 					}
@@ -240,11 +242,11 @@ angular.module('angucomplete-alt', [] ).directive('angucompleteAlt', ['$parse', 
 				}
 			};
 
-			scope.selectResult = function(result) {
+			scope.selectResult = function (result) {
 				if (scope.matchClass) {
 					result.title = result.title.toString().replace(/(<([^>]+)>)/ig, '');
 				}
-				
+
 				if (scope.clearSelected) {
 					scope.searchStr = null;
 				}
@@ -261,17 +263,17 @@ angular.module('angucomplete-alt', [] ).directive('angucompleteAlt', ['$parse', 
 			inputField.on('keyup', scope.keyPressed);
 
 			elem.on('keyup', function (event) {
-				if(event.which === KEY_DW && scope.results) {
+				if (event.which === KEY_DW && scope.results) {
 					if ((scope.currentIndex + 1) < scope.results.length) {
-						scope.$apply(function() {
-							scope.currentIndex ++;
+						scope.$apply(function () {
+							scope.currentIndex++;
 						});
 						event.preventDefault();
 					}
 
-				} else if(event.which === KEY_UP) {
+				} else if (event.which === KEY_UP) {
 					if (scope.currentIndex >= 1) {
-						scope.currentIndex --;
+						scope.currentIndex--;
 						scope.$apply();
 						event.preventDefault();
 					}
