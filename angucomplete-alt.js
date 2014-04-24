@@ -242,7 +242,6 @@ angular.module('angucomplete-alt', []).directive('angucompleteAlt', ['$templateC
 				}
 
 				if (scope.clearSelected) {
-					console.log("aa")
 					scope.searchStr = null;
 				} else {
 					scope.searchStr = lastSearchTerm = title;
@@ -325,7 +324,6 @@ angular.module('angucomplete-alt', []).directive('angucompleteAlt', ['$templateC
 
 			element.on('keyup', function (event) {
 				if (event.which === KEY_EN) {
-					console.log(scope.results)
 					if (scope.results) {
 						if (scope.currentIndex >= 0 && scope.currentIndex < scope.results.length) {
 							var currentResult = scope.results[scope.currentIndex];
