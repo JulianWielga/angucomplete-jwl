@@ -235,6 +235,8 @@ angular.module('angucomplete-alt', []).directive('angucompleteAlt', ['$templateC
 			};
 
 			scope.selectResult = function (result) {
+				var title
+
 				if (scope.matchClass) {
 					title = result.title.toString().replace(/(<([^>]+)>)/ig, '');
 				}
@@ -326,7 +328,7 @@ angular.module('angucomplete-alt', []).directive('angucompleteAlt', ['$templateC
 					console.log(scope.results)
 					if (scope.results) {
 						if (scope.currentIndex >= 0 && scope.currentIndex < scope.results.length) {
-							currentResult = scope.results[scope.currentIndex];
+							var currentResult = scope.results[scope.currentIndex];
 							scope.selectResult(currentResult);
 						} else {
 							if (scope.overrideSuggestions) {
