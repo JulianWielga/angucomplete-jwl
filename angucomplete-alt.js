@@ -10,7 +10,7 @@
 
 'use strict';
 
-angular.module('angucomplete-alt', []).directive('angucompleteAlt', ['$parse', '$http', '$sce', '$timeout', function ($parse, $http, $sce, $timeout) {
+angular.module('angucomplete-alt', []).directive('angucompleteAlt', ['$templateCache', '$compile', '$parse', '$http', '$sce', '$timeout', function ($templateCache, $compile, $parse, $http, $sce, $timeout) {
 	var KEY_DW = 40,
 			KEY_UP = 38,
 			KEY_ES = 27,
@@ -19,9 +19,12 @@ angular.module('angucomplete-alt', []).directive('angucompleteAlt', ['$parse', '
 			MIN_LENGTH = 3,
 			PAUSE = 500;
 
+	var DEFAULT_TEMPLATE = '<div class="angucomplete-holder">\n\t<input id="{{id}}_value" ng-model="searchStr" type="text" placeholder="{{placeholder}}"\n\t\t   class="{{inputClass}}" ng-focus="resetHideResults()" ng-blur="hideResults()"/>\n\n\t<div id="{{id}}_dropdown" class="angucomplete-dropdown" ng-if="showDropdown">\n\t\t<div class="angucomplete-searching" ng-show="searching">Searching...</div>\n\t\t<div class="angucomplete-searching" ng-show="!searching && (!results || results.length == 0)">No results found\n\t\t</div>\n\t\t<div class="angucomplete-row" ng-repeat="result in results" ng-click="selectResult(result)"\n\t\t\t ng-mouseover="hoverRow($index)" ng-class="{\'angucomplete-selected-row\': $index == currentIndex}">\n\t\t\t<div ng-if="imageField" class="angucomplete-image-holder">\n\t\t\t\t<img ng-if="result.image && result.image != \'\'"\n\t\t\t\t\t ng-src="{{result.image}}"\n\t\t\t\t\t class="angucomplete-image"/>\n\n\t\t\t\t<div ng-if="!result.image && result.image != \'\'" class="angucomplete-image-default"></div>\n\t\t\t</div>\n\t\t\t<div class="angucomplete-title" ng-bind-html="result.title"></div>\n\t\t\t<div ng-if="result.description && result.description != \'\'" class="angucomplete-description"\n\t\t\t\t ng-bind-html="result.description"></div>\n\t\t</div>\n\t</div>\n</div>'
+
 	return {
 		restrict: 'EA',
 		scope: {
+			onSelectObject: '&',
 			selectedObject: '=',
 			localData: '=',
 			remoteUrlRequestFormatter: '=',
@@ -38,22 +41,9 @@ angular.module('angucomplete-alt', []).directive('angucompleteAlt', ['$parse', '
 			minlength: '@',
 			matchClass: '@',
 			clearSelected: '@',
-			overrideSuggestions: '@'
+			overrideSuggestions: '@',
+			customTemplate: '@'
 		},
-		template: '<div class="angucomplete-holder">' +
-				'<input id="{{id}}_value" ng-model="searchStr" type="text" placeholder="{{placeholder}}" class="{{inputClass}}" ng-focus="resetHideResults()" ng-blur="hideResults()"/>' +
-				'<div id="{{id}}_dropdown" class="angucomplete-dropdown" ng-if="showDropdown">' +
-				'	<div class="angucomplete-searching" ng-show="searching">Searching...</div>' +
-				'	<div class="angucomplete-searching" ng-show="!searching && (!results || results.length == 0)">No results found</div>' +
-				'	<div class="angucomplete-row" ng-repeat="result in results" ng-click="selectResult(result)" ng-mouseover="hoverRow()" ng-class="{\'angucomplete-selected-row\': $index == currentIndex}">' +
-				'		<div ng-if="imageField" class="angucomplete-image-holder">' +
-				'			<img ng-if="result.image && result.image != \'\'" ng-src="{{result.image}}" class="angucomplete-image"/>' +
-				'			<div ng-if="!result.image && result.image != \'\'" class="angucomplete-image-default"></div>' +
-				'		</div>' +
-				'		<div class="angucomplete-title" ng-bind-html="result.title"></div>' +
-				'		<div ng-if="result.description && result.description != \'\'" class="angucomplete-description" ng-bind-html="result.description"></div>' +
-				'	</div>' +
-				'</div></div>',
 
 		link: function (scope, elem, attrs) {
 			var inputField,
@@ -66,14 +56,33 @@ angular.module('angucomplete-alt', []).directive('angucompleteAlt', ['$parse', '
 			scope.searching = false;
 			scope.searchStr = null;
 
-			var setInputString = function (str) {
+			scope.$watch(attrs.customTemplate, function (value) {
+				loadTemplate(value)
+			});
+
+			function loadTemplate(templateUrl) {
+				if (templateUrl) {
+					$http.get(templateUrl, { cache: $templateCache })
+							.success(function (templateContent) {
+								elem.html(templateContent);
+								$compile(elem.contents())(scope)
+							});
+				} else {
+					elem.html(DEFAULT_TEMPLATE)
+					$compile(elem.contents())(scope)
+				}
+			}
+
+
+			scope.setInputString = function (str) {
 				scope.selectedObject = {originalObject: str};
 
 				if (scope.clearSelected) {
 					scope.searchStr = null;
 				}
+
 				scope.showDropdown = false;
-				scope.results = [];
+				lastSearchTerm = scope.str;
 			};
 
 			var isNewSearchNeeded = function (newTerm, oldTerm) {
@@ -134,7 +143,9 @@ angular.module('angucomplete-alt', []).directive('angucompleteAlt', ['$parse', '
 						titleFields = scope.titleField.split(',');
 					}
 
-					for (i = 0; i < responseData.length; i++) {
+
+					limit = responseData.length;
+					for (i = 0; i < limit; i++) {
 						// Get title variables
 						titleCode = [];
 
@@ -154,17 +165,14 @@ angular.module('angucomplete-alt', []).directive('angucompleteAlt', ['$parse', '
 
 						text = titleCode.join(' ');
 						if (scope.matchClass) {
-							console.log(str);
-							re = new RegExp(str, 'i');
+							re = new RegExp("(" + str.split(' ').join('|') + ")", 'ig');
 
-							titlePart = text.match(re);
-							if (titlePart != null) {
-								text = text.replace(re, '<span class="' + scope.matchClass + '">' + titlePart[0] + '</span>');
+							if (text.match(re) != null) {
+								text = text.replace(re, '<span class="' + scope.matchClass + '">$1</span>');
 							}
 
-							descPart = description.match(re);
-							if (descPart != null) {
-								description = description.replace(re, '<span class="' + scope.matchClass + '">' + descPart[0] + '</span>');
+							if (description.match(re) != null) {
+								description = description.replace(re, '<span class="' + scope.matchClass + '">$1</span>');
 							}
 						}
 
@@ -233,8 +241,8 @@ angular.module('angucomplete-alt', []).directive('angucompleteAlt', ['$parse', '
 
 			};
 
-			scope.hoverRow = function (index) {
-				scope.currentIndex = index;
+			scope.hoverRow = function ($index) {
+				scope.currentIndex = $index;
 			};
 
 			scope.keyPressed = function (event) {
@@ -277,47 +285,49 @@ angular.module('angucomplete-alt', []).directive('angucompleteAlt', ['$parse', '
 				scope.selectedObject = result;
 				scope.showDropdown = false;
 				scope.results = [];
+				scope.onSelectObject({results:scope.results})
 			};
 
-			inputField = elem.find('input');
+			elem.on('keyup', 'input', scope.keyPressed);
 
-			inputField.on('keyup', scope.keyPressed);
+			//Keyboard highlight result
+			elem.on('keydown', 'input', function (event) {
+				if (scope.results && scope.results.length > 0) {
+					if (event.which === KEY_DW) {
+						event.preventDefault();
+						if (scope.currentIndex < scope.results.length - 1) {
+							scope.currentIndex++;
+							scope.$apply();
+						}
+					} else if (event.which === KEY_UP) {
+						event.preventDefault();
+						if (scope.currentIndex >= 0) {
+							scope.currentIndex--;
+							scope.$apply();
+						}
+					}
+				}
+			})
 
 			elem.on('keyup', function (event) {
-				if (event.which === KEY_DW && scope.results) {
-					if ((scope.currentIndex + 1) < scope.results.length) {
-						scope.$apply(function () {
-							scope.currentIndex++;
-						});
-						event.preventDefault();
-					}
-
-				} else if (event.which === KEY_UP) {
-					if (scope.currentIndex >= 1) {
-						scope.currentIndex--;
-						scope.$apply();
-						event.preventDefault();
-					}
-
-				} else if (event.which === KEY_EN && scope.results) {
-					if (scope.currentIndex >= 0 && scope.currentIndex < scope.results.length) {
-						scope.selectResult(scope.results[scope.currentIndex]);
-						scope.$apply();
-						event.preventDefault();
-					} else {
-						event.preventDefault();
-						if (scope.overrideSuggestions) {
-							setInputString(scope.searchStr);
-							scope.$apply();
+				if (event.which === KEY_EN) {
+					if (scope.results) {
+						scope.onSelectObject({results:scope.results})
+						if (scope.currentIndex >= 0 && scope.currentIndex < scope.results.length) {
+							scope.selectResult(scope.results[scope.currentIndex]);
+						} else {
+							if (scope.overrideSuggestions) {
+								scope.setInputString(scope.searchStr);
+							} else {
+								scope.results = [];
+							}
 						}
-						else {
-							scope.results = [];
-							scope.$apply();
-						}
+						scope.$apply();
 					}
+					event.preventDefault();
 
 				} else if (event.which === KEY_ES) {
-					scope.results = [];
+					scope.currentIndex = -1;
 					scope.showDropdown = false;
 					scope.$apply();
 				} else if (event.which === KEY_BS) {
