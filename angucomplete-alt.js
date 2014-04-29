@@ -58,8 +58,26 @@ angular.module('angucomplete-alt', []).directive('angucompleteAlt', ['$templateC
 			lastSearchTerm = scope.str;
 		};
 
+		var isTermLongEnough = function(term) {
+			if (scope.termSeparator && scope.termSeparator.length) {
+				var str, i, _ref;
+				_ref = term.split(' ');
+				for (i = 0; i < _ref.length; i++) {
+					str = _ref[i];
+					if (str.length >= scope.minlength) {
+						return true;
+					}
+				}
+			} else {
+				if (term.length >= scope.minlength) {
+					return true;
+				}
+			}
+			return false;
+		};
+
 		var isNewSearchNeeded = function (newTerm, oldTerm) {
-			return newTerm.length >= scope.minlength && newTerm !== oldTerm;
+			return isTermLongEnough(newTerm) && newTerm !== oldTerm;
 		};
 
 		var extractValue = function (obj, key) {
@@ -144,7 +162,7 @@ angular.module('angucomplete-alt', []).directive('angucompleteAlt', ['$templateC
 		};
 
 		scope.searchTimerComplete = function (query) {
-			if (!query.length || query.length < scope.minlength) return;
+			if (!query.length || !isTermLongEnough(query)) return;
 
 			var searchFields, matches, i, match, s, params;
 
@@ -247,7 +265,7 @@ angular.module('angucomplete-alt', []).directive('angucompleteAlt', ['$templateC
 		scope.keyPressed = function (event) {
 			if (!(event.which === KEY_UP || event.which === KEY_DW || event.which === KEY_EN)) {
 
-				if (!scope.searchStr || scope.searchStr === '' || scope.searchStr.length < scope.minlength) {
+				if (!scope.searchStr || scope.searchStr === '' || !isTermLongEnough(scope.searchStr)) {
 					scope.$apply(function () {
 						scope.results = [];
 						lastSearchTerm = null;
@@ -333,7 +351,8 @@ angular.module('angucomplete-alt', []).directive('angucompleteAlt', ['$templateC
 			matchClass: '@',
 			clearSelected: '@',
 			overrideSuggestions: '@',
-			customTemplate: '@'
+			customTemplate: '@',
+			termSeparator: '@'
 		},
 
 		link: function (scope, element, attrs) {
