@@ -97,7 +97,9 @@ angular.module('angucomplete-alt', []).directive('angucompleteAlt', ['$templateC
 
 		scope.hideResults = function () {
 			hideTimer = $timeout(function () {
-				scope.showDropdown = false;
+				if (!scope.searching) {
+					scope.showDropdown = false;
+				}
 			}, scope.pause);
 		};
 
