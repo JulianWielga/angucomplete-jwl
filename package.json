@@ -4,7 +4,7 @@
   ],
   "name": "angucomplete",
   "description": "Awesome Autocompleteness for AngularJS",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "homepage": "http://julianwielga.github.io/angucomplete-jwl",
   "engines": {
     "node": ">= 0.8.4"

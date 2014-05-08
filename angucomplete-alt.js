@@ -25,10 +25,14 @@ angular.module('angucomplete-alt', []).directive('angucompleteAlt', ['$templateC
 		var searchTimer = null;
 		var lastSearchTerm = null;
 		var hideTimer;
+		var initSelect;
 
 		scope.currentIndex = null;
-		scope.searchStr = null;
 		scope.searching = false;
+
+		if (!scope.searchTerm) {
+			scope.searchTerm = null;
+		}
 
 		if (!scope.minlength || scope.minlength === '') {
 			scope.minlength = MIN_LENGTH;
@@ -51,7 +55,7 @@ angular.module('angucomplete-alt', []).directive('angucompleteAlt', ['$templateC
 			scope.selectedObject = {originalObject: str};
 
 			if (scope.clearSelected) {
-				scope.searchStr = null;
+				scope.searchTerm = null;
 			}
 
 			scope.showDropdown = false;
@@ -59,18 +63,20 @@ angular.module('angucomplete-alt', []).directive('angucompleteAlt', ['$templateC
 		};
 
 		var isTermLongEnough = function(term) {
-			if (scope.termSeparator && scope.termSeparator.length) {
-				var str, i, _ref;
-				_ref = term.split(' ');
-				for (i = 0; i < _ref.length; i++) {
-					str = _ref[i];
-					if (str.length >= scope.minlength) {
+			if (term) {
+				if (scope.termSeparator && scope.termSeparator.length) {
+					var str, i, _ref;
+					_ref = term.split(' ');
+					for (i = 0; i < _ref.length; i++) {
+						str = _ref[i];
+						if (str.length >= scope.minlength) {
+							return true;
+						}
+					}
+				} else {
+					if (term.length >= scope.minlength) {
 						return true;
 					}
-				}
-			} else {
-				if (term.length >= scope.minlength) {
-					return true;
 				}
 			}
 			return false;
@@ -161,10 +167,16 @@ angular.module('angucomplete-alt', []).directive('angucompleteAlt', ['$templateC
 				};
 
 			}
+
+			if (initSelect) {
+				initSelect = false
+				scope.selectNone()
+			}
 		};
 
 		scope.searchTimerComplete = function (query) {
-			if (!query.length || !isTermLongEnough(query)) return;
+			searchTimer = null;
+			if (!query || !query.length || !isTermLongEnough(query)) return;
 
 			var searchFields, matches, i, match, s, params;
 
@@ -220,12 +232,19 @@ angular.module('angucomplete-alt', []).directive('angucompleteAlt', ['$templateC
 			}
 
 			if (scope.clearSelected) {
-				scope.searchStr = null;
+				scope.searchTerm = null;
 			} else {
-				scope.searchStr = lastSearchTerm = title;
+				scope.searchTerm = lastSearchTerm = title;
 			}
 			scope.selectedObject = result;
 			scope.showDropdown = false;
+		};
+		scope.selectNone = function () {
+			if (scope.overrideSuggestions) {
+				scope.setInputString(scope.searchTerm);
+			} else {
+				scope.results = [];
+			}
 		};
 
 
@@ -264,10 +283,40 @@ angular.module('angucomplete-alt', []).directive('angucompleteAlt', ['$templateC
 			})
 		});
 
+		scope.prepareSearch = function() {
+			scope.results = [];
+			lastSearchTerm = scope.searchTerm;
+			scope.showDropdown = true;
+			scope.searching = true;
+			scope.currentIndex = -1;
+			if (searchTimer) {
+				$timeout.cancel(searchTimer);
+			}
+		}
+
+		scope.delayedSearch = function() {
+			if (isNewSearchNeeded(scope.searchTerm, lastSearchTerm)) {
+				scope.$apply(function () {
+					scope.prepareSearch()
+				});
+				searchTimer = $timeout(function () {
+					scope.searchTimerComplete(scope.searchTerm);
+				}, scope.pause);
+			}
+		}
+		scope.initSearch = function() {
+			if (isNewSearchNeeded(scope.searchTerm, lastSearchTerm)) {
+				initSelect = true;
+				scope.prepareSearch();
+				scope.showDropdown = false;
+				scope.searchTimerComplete(scope.searchTerm);
+			}
+		}
+
 		scope.keyPressed = function (event) {
 			if (!(event.which === KEY_UP || event.which === KEY_DW || event.which === KEY_EN)) {
 
-				if (!scope.searchStr || scope.searchStr === '' || !isTermLongEnough(scope.searchStr)) {
+				if (!scope.searchTerm || scope.searchTerm === '' || !isTermLongEnough(scope.searchTerm)) {
 					scope.$apply(function () {
 						scope.results = [];
 						lastSearchTerm = null;
@@ -275,22 +324,8 @@ angular.module('angucomplete-alt', []).directive('angucompleteAlt', ['$templateC
 						scope.currentIndex = -1;
 					})
 
-				} else if (isNewSearchNeeded(scope.searchStr, lastSearchTerm)) {
-					scope.$apply(function () {
-						scope.results = [];
-						lastSearchTerm = scope.searchStr;
-						scope.showDropdown = true;
-						scope.searching = true;
-						scope.currentIndex = -1;
-					});
-
-					if (searchTimer) {
-						$timeout.cancel(searchTimer);
-					}
-
-					searchTimer = $timeout(function () {
-						scope.searchTimerComplete(scope.searchStr);
-					}, scope.pause);
+				} else {
+					scope.delayedSearch();
 				}
 
 			} else {
@@ -300,28 +335,31 @@ angular.module('angucomplete-alt', []).directive('angucompleteAlt', ['$templateC
 
 		element.on('keyup', 'input', scope.keyPressed);
 
+		var handleEnter = function() {
+			if (searchTimer) {
+				return $timeout(handleEnter, scope.pause)
+			}
+
+			if (scope.results) {
+				if (scope.currentIndex >= 0 && scope.currentIndex < scope.results.length) {
+					var currentResult = scope.results[scope.currentIndex];
+					scope.selectResult(currentResult);
+				} else {
+					scope.selectNone();
+				}
+			}
+		};
 
 		element.on('keyup', function (event) {
 			scope.$apply(function () {
 				if (event.which === KEY_EN) {
-					if (scope.results) {
-						if (scope.currentIndex >= 0 && scope.currentIndex < scope.results.length) {
-							var currentResult = scope.results[scope.currentIndex];
-							scope.selectResult(currentResult);
-						} else {
-							if (scope.overrideSuggestions) {
-								scope.setInputString(scope.searchStr);
-							} else {
-								scope.results = [];
-							}
-						}
-					}
 					event.preventDefault();
+					handleEnter();
 				} else if (event.which === KEY_ES) {
 					scope.currentIndex = -1;
 					scope.showDropdown = false;
-				} else if (event.which === KEY_BS) {
-					scope.selectedObject = null;
+//				} else if (event.which === KEY_BS) {
+//					scope.selectedObject = null;
 				}
 			})
 		});
@@ -337,6 +375,7 @@ angular.module('angucomplete-alt', []).directive('angucompleteAlt', ['$templateC
 		scope: {
 			onSelectObject: '&',
 			selectedObject: '=',
+			searchTerm: '=',
 			localData: '=',
 			remoteUrlRequestFormatter: '=',
 			id: '@',
@@ -370,6 +409,7 @@ angular.module('angucomplete-alt', []).directive('angucompleteAlt', ['$templateC
 				element.html(template);
 				$compile(element.contents())(scope);
 				linker(scope, element);
+				scope.initSearch();
 			});
 		}
 	};
