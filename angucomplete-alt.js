@@ -17,6 +17,7 @@ angular.module('angucomplete-alt', []).directive('angucompleteAlt', ['$templateC
 			KEY_EN = 13,
 			KEY_BS = 8,
 			MIN_LENGTH = 3,
+			LIMIT = 25,
 			PAUSE = 500;
 
 	var DEFAULT_TEMPLATE = '<div class="angucomplete-holder">\n\t<input id="{{id}}_value" ng-model="searchStr" type="text" placeholder="{{placeholder}}"\n\t\t   class="{{inputClass}}" ng-focus="resetHideResults()" ng-blur="hideResults()"/>\n\n\t<div id="{{id}}_dropdown" class="angucomplete-dropdown" ng-if="showDropdown" ng-mouseleave="deselectRow()">\n\t\t<div class="angucomplete-searching" ng-show="searching">Searching...</div>\n\t\t<div class="angucomplete-searching" ng-show="!searching && (!results || results.length == 0)">No results found\n\t\t</div>\n\t\t<div class="angucomplete-row" ng-repeat="result in results" ng-click="selectResult(result)"\n\t\t\t ng-mouseover="selectRow($index)" ng-class="{\'angucomplete-selected-row\': $index == currentIndex}">\n\t\t\t<div ng-if="imageField" class="angucomplete-image-holder">\n\t\t\t\t<img ng-if="result.image && result.image != \'\'"\n\t\t\t\t\t ng-src="{{result.image}}"\n\t\t\t\t\t class="angucomplete-image"/>\n\n\t\t\t\t<div ng-if="!result.image && result.image != \'\'" class="angucomplete-image-default"></div>\n\t\t\t</div>\n\t\t\t<div class="angucomplete-title" ng-bind-html="result.title"></div>\n\t\t\t<div ng-if="result.description && result.description != \'\'" class="angucomplete-description"\n\t\t\t\t ng-bind-html="result.description"></div>\n\t\t</div>\n\t</div>\n</div>'
@@ -25,11 +26,13 @@ angular.module('angucomplete-alt', []).directive('angucompleteAlt', ['$templateC
 		var searchTimer = null;
 		var lastSearchTerm = null;
 		var hideTimer;
-		var initSelect;
 
 		scope.currentIndex = null;
 		scope.searching = false;
-
+		if(!scope.limitSuggestions || !(scope.limitSuggestions > 0)) {
+			scope.limitSuggestions = LIMIT;
+		}
+		
 		if (!scope.searchTerm) {
 			scope.searchTerm = null;
 		}
@@ -168,9 +171,8 @@ angular.module('angucomplete-alt', []).directive('angucompleteAlt', ['$templateC
 
 			}
 
-			if (initSelect) {
-				initSelect = false
-				scope.selectNone()
+			if (scope.results.length === 1) {
+				scope.selectRow(0);
 			}
 		};
 
@@ -257,14 +259,20 @@ angular.module('angucomplete-alt', []).directive('angucompleteAlt', ['$templateC
 		};
 
 		scope.selectNextRow = function () {
-			if (scope.currentIndex < scope.results.length - 1) {
-				scope.currentIndex++;
+			var max = Math.min(scope.results.length, scope.limitSuggestions)
+			if (scope.currentIndex < max - 1) {
+				scope.currentIndex++
+			} else if (scope.currentIndex = max) {
+				scope.currentIndex = -1;
 			}
 		};
 
 		scope.selectPrevRow = function () {
 			if (scope.currentIndex >= 0) {
 				scope.currentIndex--;
+			} else {
+				var max = Math.min(scope.results.length, scope.limitSuggestions) - 1
+				scope.currentIndex = max;
 			}
 		};
 
@@ -306,7 +314,6 @@ angular.module('angucomplete-alt', []).directive('angucompleteAlt', ['$templateC
 		}
 		scope.initSearch = function() {
 			if (isNewSearchNeeded(scope.searchTerm, lastSearchTerm)) {
-				initSelect = true;
 				scope.prepareSearch();
 				scope.showDropdown = false;
 				scope.searchTimerComplete(scope.searchTerm);
@@ -393,7 +400,8 @@ angular.module('angucomplete-alt', []).directive('angucompleteAlt', ['$templateC
 			clearSelected: '@',
 			overrideSuggestions: '@',
 			customTemplate: '@',
-			termSeparator: '@'
+			termSeparator: '@',
+			limitSuggestions: '@'
 		},
 
 		link: function (scope, element, attrs) {
