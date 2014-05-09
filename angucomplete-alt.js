@@ -26,13 +26,14 @@ angular.module('angucomplete-alt', []).directive('angucompleteAlt', ['$templateC
 		var searchTimer = null;
 		var lastSearchTerm = null;
 		var hideTimer;
+		var initSelect;
 
 		scope.currentIndex = null;
 		scope.searching = false;
 		if(!scope.limitSuggestions || !(scope.limitSuggestions > 0)) {
 			scope.limitSuggestions = LIMIT;
 		}
-		
+
 		if (!scope.searchTerm) {
 			scope.searchTerm = null;
 		}
@@ -68,10 +69,9 @@ angular.module('angucomplete-alt', []).directive('angucompleteAlt', ['$templateC
 		var isTermLongEnough = function(term) {
 			if (term) {
 				if (scope.termSeparator && scope.termSeparator.length) {
-					var str, i, _ref;
-					_ref = term.split(' ');
-					for (i = 0; i < _ref.length; i++) {
-						str = _ref[i];
+					var terms = term.split(' ');
+					for (var i = 0; i < terms.length; i++) {
+						var str = terms[i];
 						if (str.length >= scope.minlength) {
 							return true;
 						}
@@ -171,9 +171,13 @@ angular.module('angucomplete-alt', []).directive('angucompleteAlt', ['$templateC
 
 			}
 
-			if (scope.results.length === 1) {
+			if (initSelect) {
+				initSelect = false
+				scope.selectNone()
+			} else if (scope.results.length === 1) {
 				scope.selectRow(0);
 			}
+
 		};
 
 		scope.searchTimerComplete = function (query) {
@@ -314,6 +318,7 @@ angular.module('angucomplete-alt', []).directive('angucompleteAlt', ['$templateC
 		}
 		scope.initSearch = function() {
 			if (isNewSearchNeeded(scope.searchTerm, lastSearchTerm)) {
+				initSelect = true;
 				scope.prepareSearch();
 				scope.showDropdown = false;
 				scope.searchTimerComplete(scope.searchTerm);
