@@ -214,7 +214,7 @@ angular.module('angucomplete-alt', []).directive('angucompleteAlt', ['$templateC
 							scope.processResults(extractValue(responseData, scope.remoteUrlDataField), query);
 						}).
 						error(function (data, status, headers, config) {
-							scope.onError({data: data, status: status, headers: headers(), config: config});
+							console.log('error');
 						});
 
 			} else {
@@ -224,7 +224,7 @@ angular.module('angucomplete-alt', []).directive('angucompleteAlt', ['$templateC
 							scope.processResults(extractValue(responseData, scope.remoteUrlDataField), query);
 						}).
 						error(function (data, status, headers, config) {
-							scope.onError({data: data, status: status, headers: headers(), config: config});
+							console.log('error');
 						});
 			}
 
@@ -386,7 +386,6 @@ angular.module('angucomplete-alt', []).directive('angucompleteAlt', ['$templateC
 		restrict: 'EA',
 		scope: {
 			onSelectObject: '&',
-			onError: '&',
 			selectedObject: '=',
 			searchTerm: '=',
 			localData: '=',
