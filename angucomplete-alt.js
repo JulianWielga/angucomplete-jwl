@@ -348,7 +348,7 @@ angular.module('angucomplete-alt', []).directive('angucompleteAlt', ['$templateC
 		element.on('keyup', 'input', scope.keyPressed);
 
 		var handleEnter = function() {
-			if (searchTimer) {
+			if (searchTimer || scope.searching) {
 				return $timeout(handleEnter, scope.pause)
 			}
 
